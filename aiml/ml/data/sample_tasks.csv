@@ -1,0 +1,6 @@
+task_id,department,asset,location,corridor_id,duration_minutes,criticality,severity,asset_importance,train_impact,overdue_days,historical_failures
+ENG-104,Engineering,Track-12,Delhi,C01,120,10,9,10,8,6,3
+SNT-205,S&T,Signal-21,Delhi,C01,90,9,8,9,7,3,2
+TRC-102,Traction,OHE-45,Delhi,C02,60,7,7,8,6,2,1
+ENG-118,Engineering,Track-08,Delhi,C03,45,6,5,7,5,1,1
+SNT-214,S&T,Signal-18,Delhi,C02,60,5,4,6,4,0,1

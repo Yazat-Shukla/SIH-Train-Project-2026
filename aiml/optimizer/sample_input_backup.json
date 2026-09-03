@@ -1,0 +1,79 @@
+{
+  "tasks": [
+    {
+      "task_id": "ENG-104",
+      "department": "Engineering",
+      "corridor_id": "C01",
+      "duration_minutes": 120,
+      "priority_score": 84.0
+    },
+    {
+      "task_id": "SNT-205",
+      "department": "S&T",
+      "corridor_id": "C01",
+      "duration_minutes": 90,
+      "priority_score": 74.0
+    },
+    {
+      "task_id": "TRC-102",
+      "department": "Traction",
+      "corridor_id": "C02",
+      "duration_minutes": 60,
+      "priority_score": 61.67
+    },
+    {
+      "task_id": "ENG-118",
+      "department": "Engineering",
+      "corridor_id": "C03",
+      "duration_minutes": 45,
+      "priority_score": 50.33
+    },
+    {
+      "task_id": "SNT-214",
+      "department": "S&T",
+      "corridor_id": "C02",
+      "duration_minutes": 60,
+      "priority_score": 41.5
+    }
+  ],
+  "blocks": [
+    {
+      "block_id": "B21",
+      "corridor_id": "C01",
+      "start_time": "22:00",
+      "end_time": "02:00"
+    },
+    {
+      "block_id": "B22",
+      "corridor_id": "C02",
+      "start_time": "22:00",
+      "end_time": "01:00"
+    },
+    {
+      "block_id": "B23",
+      "corridor_id": "C03",
+      "start_time": "23:00",
+      "end_time": "01:00"
+    }
+  ],
+  "trains": [
+    {
+      "train_id": "12951",
+      "corridor_id": "C01",
+      "start_time": "22:30",
+      "end_time": "23:00"
+    },
+    {
+      "train_id": "12002",
+      "corridor_id": "C01",
+      "start_time": "00:15",
+      "end_time": "00:45"
+    },
+    {
+      "train_id": "12401",
+      "corridor_id": "C02",
+      "start_time": "23:00",
+      "end_time": "23:30"
+    }
+  ]
+}

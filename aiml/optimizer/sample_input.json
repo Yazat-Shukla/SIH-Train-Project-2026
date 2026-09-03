@@ -1,0 +1,108 @@
+{
+  "planning_start_time": "22:00",
+
+  "tasks": [
+    {
+      "task_id": "ENG-104",
+      "department": "Engineering",
+      "corridor_id": "C01",
+      "duration_minutes": 120,
+      "criticality": 10,
+      "severity": 9,
+      "asset_importance": 10,
+      "train_impact": 8,
+      "overdue_days": 6,
+      "historical_failures": 3
+    },
+    {
+      "task_id": "SNT-205",
+      "department": "S&T",
+      "corridor_id": "C01",
+      "duration_minutes": 90,
+      "criticality": 9,
+      "severity": 8,
+      "asset_importance": 9,
+      "train_impact": 7,
+      "overdue_days": 3,
+      "historical_failures": 2
+    },
+    {
+      "task_id": "TRC-102",
+      "department": "Traction",
+      "corridor_id": "C02",
+      "duration_minutes": 60,
+      "criticality": 7,
+      "severity": 7,
+      "asset_importance": 8,
+      "train_impact": 6,
+      "overdue_days": 2,
+      "historical_failures": 1
+    },
+    {
+      "task_id": "ENG-118",
+      "department": "Engineering",
+      "corridor_id": "C03",
+      "duration_minutes": 45,
+      "criticality": 6,
+      "severity": 5,
+      "asset_importance": 7,
+      "train_impact": 5,
+      "overdue_days": 1,
+      "historical_failures": 1
+    },
+    {
+      "task_id": "SNT-214",
+      "department": "S&T",
+      "corridor_id": "C02",
+      "duration_minutes": 60,
+      "criticality": 5,
+      "severity": 4,
+      "asset_importance": 6,
+      "train_impact": 4,
+      "overdue_days": 0,
+      "historical_failures": 1
+    }
+  ],
+
+  "blocks": [
+    {
+      "block_id": "B21",
+      "corridor_id": "C01",
+      "start_time": "22:00",
+      "end_time": "02:00"
+    },
+    {
+      "block_id": "B22",
+      "corridor_id": "C02",
+      "start_time": "22:00",
+      "end_time": "01:00"
+    },
+    {
+      "block_id": "B23",
+      "corridor_id": "C03",
+      "start_time": "23:00",
+      "end_time": "01:00"
+    }
+  ],
+
+  "trains": [
+    {
+      "train_id": "12951",
+      "corridor_id": "C01",
+      "start_time": "22:30",
+      "end_time": "23:00"
+    },
+    {
+      "train_id": "12002",
+      "corridor_id": "C01",
+      "start_time": "00:15",
+      "end_time": "00:45"
+    },
+    {
+      "train_id": "12401",
+      "corridor_id": "C02",
+      "start_time": "23:00",
+      "end_time": "23:30"
+    }
+  ]
+}
