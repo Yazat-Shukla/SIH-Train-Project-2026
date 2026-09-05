@@ -1,5 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Maintenance from "./pages/Maintenance";
 import BlockPlanner from "./pages/BlockPlanner";
@@ -13,38 +17,55 @@ function App() {
 
       <Routes>
 
-  <Route element={<Layout />}>
+        {/* ================= LOGIN ================= */}
 
-  <Route path="/" element={<Dashboard />} />
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
-  <Route
-    path="/maintenance"
-    element={<Maintenance />}
-  />
 
-  <Route
-    path="/block-planner"
-    element={<BlockPlanner />}
-  />
+        {/* ================= PROTECTED PAGES ================= */}
 
-  <Route
-    path="/schedule"
-    element={<Schedule />}
-  />
+        <Route element={<ProtectedRoute />}>
 
-  <Route
-    path="/analytics"
-    element={<Analytics />}
-  />
+          <Route element={<Layout />}>
 
-  <Route
-    path="/railway-map"
-    element={<RailwayMap />}
-  />
+            <Route
+              path="/"
+              element={<Dashboard />}
+            />
 
-</Route>
+            <Route
+              path="/maintenance"
+              element={<Maintenance />}
+            />
 
-</Routes>
+            <Route
+              path="/block-planner"
+              element={<BlockPlanner />}
+            />
+
+            <Route
+              path="/schedule"
+              element={<Schedule />}
+            />
+
+            <Route
+              path="/analytics"
+              element={<Analytics />}
+            />
+
+            <Route
+              path="/railway-map"
+              element={<RailwayMap />}
+            />
+
+          </Route>
+
+        </Route>
+
+      </Routes>
 
     </BrowserRouter>
   );

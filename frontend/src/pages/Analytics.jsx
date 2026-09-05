@@ -3,9 +3,18 @@ import "../App.css";
 
 function Analytics() {
   /*
-   * DEMO MAINTENANCE DATA
+   * ============================
+   * CURRENT PROJECT DATA
+   * ============================
    *
-   * Later this data will come from:
+   * These are the same 5 maintenance
+   * tasks currently used in the project.
+   *
+   * optimizedDuration represents the
+   * expected duration after scheduling
+   * optimization.
+   *
+   * Later:
    * FastAPI -> Database -> XGBoost -> OR-Tools
    */
 
@@ -13,165 +22,97 @@ function Analytics() {
     {
       id: "ENG-104",
       department: "Engineering",
+      asset: "Track-12",
       risk: "Critical",
       priority: 94,
       duration: 120,
-      optimizedDuration: 90
-    },
-    {
-      id: "ENG-105",
-      department: "Engineering",
-      risk: "Critical",
-      priority: 91,
-      duration: 100,
-      optimizedDuration: 80
-    },
-    {
-      id: "ENG-106",
-      department: "Engineering",
-      risk: "Critical",
-      priority: 88,
-      duration: 90,
-      optimizedDuration: 70
-    },
-    {
-      id: "ENG-107",
-      department: "Engineering",
-      risk: "Critical",
-      priority: 86,
-      duration: 80,
-      optimizedDuration: 60
-    },
-    {
-      id: "ENG-108",
-      department: "Engineering",
-      risk: "Critical",
-      priority: 84,
-      duration: 90,
-      optimizedDuration: 70
-    },
-    {
-      id: "ENG-109",
-      department: "Engineering",
-      risk: "High",
-      priority: 82,
-      duration: 90,
-      optimizedDuration: 75
-    },
-    {
-      id: "ENG-110",
-      department: "Engineering",
-      risk: "High",
-      priority: 80,
-      duration: 80,
-      optimizedDuration: 65
-    },
-    {
-      id: "ENG-111",
-      department: "Engineering",
-      risk: "High",
-      priority: 78,
-      duration: 70,
-      optimizedDuration: 55
-    },
-
-    {
-      id: "SNT-201",
-      department: "S&T",
-      risk: "High",
-      priority: 76,
-      duration: 90,
-      optimizedDuration: 70
-    },
-    {
-      id: "SNT-202",
-      department: "S&T",
-      risk: "High",
-      priority: 74,
-      duration: 80,
-      optimizedDuration: 60
-    },
-    {
-      id: "SNT-203",
-      department: "S&T",
-      risk: "High",
-      priority: 72,
-      duration: 75,
-      optimizedDuration: 55
-    },
-    {
-      id: "SNT-204",
-      department: "S&T",
-      risk: "High",
-      priority: 70,
-      duration: 70,
-      optimizedDuration: 50
+      optimizedDuration: 90,
+      status: "Pending"
     },
     {
       id: "SNT-205",
       department: "S&T",
+      asset: "Signal-21",
       risk: "High",
-      priority: 68,
-      duration: 60,
-      optimizedDuration: 45
-    },
-    {
-      id: "SNT-206",
-      department: "S&T",
-      risk: "High",
-      priority: 66,
-      duration: 60,
-      optimizedDuration: 45
-    },
-
-    {
-      id: "TRC-101",
-      department: "Traction",
-      risk: "Medium",
-      priority: 64,
-      duration: 80,
-      optimizedDuration: 65
+      priority: 87,
+      duration: 90,
+      optimizedDuration: 70,
+      status: "Pending"
     },
     {
       id: "TRC-102",
       department: "Traction",
-      risk: "Medium",
-      priority: 62,
-      duration: 70,
-      optimizedDuration: 55
-    },
-    {
-      id: "TRC-103",
-      department: "Traction",
-      risk: "Medium",
-      priority: 60,
+      asset: "OHE-45",
+      risk: "High",
+      priority: 73,
       duration: 60,
-      optimizedDuration: 45
+      optimizedDuration: 45,
+      status: "In Progress"
     },
     {
-      id: "TRC-104",
-      department: "Traction",
+      id: "ENG-118",
+      department: "Engineering",
+      asset: "Track-08",
       risk: "Medium",
-      priority: 58,
-      duration: 60,
-      optimizedDuration: 45
-    },
-
-    {
-      id: "OTH-101",
-      department: "Other",
-      risk: "Medium",
-      priority: 56,
-      duration: 50,
-      optimizedDuration: 40
-    },
-    {
-      id: "OTH-102",
-      department: "Other",
-      risk: "Medium",
-      priority: 49,
+      priority: 61,
       duration: 45,
-      optimizedDuration: 35
+      optimizedDuration: 40,
+      status: "Pending"
+    },
+    {
+      id: "SNT-214",
+      department: "S&T",
+      asset: "Signal-18",
+      risk: "Medium",
+      priority: 48,
+      duration: 60,
+      optimizedDuration: 45,
+      status: "Scheduled"
+    }
+  ];
+
+  /*
+   * ============================
+   * CURRENT SCHEDULE BLOCKS
+   * ============================
+   */
+
+  const scheduleBlocks = [
+    {
+      blockId: "B12",
+      taskId: "ENG-104",
+      department: "Engineering",
+      asset: "Track-12",
+      corridor: "C01",
+      start: "22:00",
+      end: "23:30"
+    },
+    {
+      blockId: "B13",
+      taskId: "SNT-205",
+      department: "S&T",
+      asset: "Signal-21",
+      corridor: "C01",
+      start: "23:30",
+      end: "01:00"
+    },
+    {
+      blockId: "B14",
+      taskId: "TRC-102",
+      department: "Traction",
+      asset: "OHE-45",
+      corridor: "C02",
+      start: "01:00",
+      end: "02:00"
+    },
+    {
+      blockId: "B15",
+      taskId: "ENG-118",
+      department: "Engineering",
+      asset: "Track-08",
+      corridor: "C03",
+      start: "02:00",
+      end: "02:45"
     }
   ];
 
@@ -202,33 +143,56 @@ function Analytics() {
   ).length;
 
   /*
-   * Average priority
+   * ============================
+   * AVERAGE PRIORITY
+   * ============================
    */
 
-  const averagePriority = Math.round(
-    maintenanceData.reduce(
-      (total, task) =>
-        total + task.priority,
-      0
-    ) / totalTasks
-  );
+  const averagePriority =
+    totalTasks > 0
+      ? Math.round(
+          maintenanceData.reduce(
+            (total, task) =>
+              total + task.priority,
+            0
+          ) / totalTasks
+        )
+      : 0;
 
   /*
-   * Hours saved after optimization
+   * ============================
+   * HOURS SAVED
+   * ============================
+   *
+   * Original duration
+   * -
+   * Optimized duration
+   *
+   * 120 - 90 = 30
+   * 90 - 70 = 20
+   * 60 - 45 = 15
+   * 45 - 40 = 5
+   * 60 - 45 = 15
+   *
+   * Total = 85 minutes
+   * = 1.42 hours
    */
 
   const totalMinutesSaved =
     maintenanceData.reduce(
       (total, task) =>
         total +
-        (task.duration -
-          task.optimizedDuration),
+        Math.max(
+          0,
+          task.duration -
+            task.optimizedDuration
+        ),
       0
     );
 
-  const hoursSaved = Math.round(
+  const hoursSaved = (
     totalMinutesSaved / 60
-  );
+  ).toFixed(1);
 
   /*
    * ============================
@@ -240,8 +204,7 @@ function Analytics() {
     Engineering:
       maintenanceData.filter(
         (task) =>
-          task.department ===
-          "Engineering"
+          task.department === "Engineering"
       ).length,
 
     "S&T":
@@ -253,15 +216,13 @@ function Analytics() {
     Traction:
       maintenanceData.filter(
         (task) =>
-          task.department ===
-          "Traction"
+          task.department === "Traction"
       ).length,
 
     Other:
       maintenanceData.filter(
         (task) =>
-          task.department ===
-          "Other"
+          task.department === "Other"
       ).length
   };
 
@@ -269,14 +230,16 @@ function Analytics() {
     Math.max(
       ...Object.values(
         departmentCounts
-      )
+      ),
+      1
     );
 
   const highestDepartment =
     Object.entries(
       departmentCounts
     ).sort(
-      (a, b) => b[1] - a[1]
+      (a, b) =>
+        b[1] - a[1]
     )[0];
 
   /*
@@ -286,14 +249,18 @@ function Analytics() {
    */
 
   const criticalPercent =
-    (criticalTasks /
-      totalTasks) *
-    100;
+    totalTasks > 0
+      ? (criticalTasks /
+          totalTasks) *
+        100
+      : 0;
 
   const highPercent =
-    (highTasks /
-      totalTasks) *
-    100;
+    totalTasks > 0
+      ? (highTasks /
+          totalTasks) *
+        100
+      : 0;
 
   const highStart =
     criticalPercent;
@@ -301,13 +268,6 @@ function Analytics() {
   const highEnd =
     criticalPercent +
     highPercent;
-
-  /*
-   * IMPORTANT:
-   *
-   * Outer circle = colored donut
-   * Inner circle = WHITE
-   */
 
   const riskChartStyle = {
     background: `conic-gradient(
@@ -319,64 +279,54 @@ function Analytics() {
 
   /*
    * ============================
-   * OPTIMIZATION ANALYTICS
+   * BLOCK ANALYTICS
    * ============================
    */
-
-  const potentialConflicts =
-    Math.max(
-      1,
-      Math.round(
-        totalTasks * 0.8
-      )
-    );
-
-  const conflictsAvoided =
-    Math.round(
-      potentialConflicts * 0.7
-    );
 
   const availableBlocks = 10;
 
   const utilizedBlocks =
-    Math.min(
-      availableBlocks,
-      Math.max(
-        1,
-        Math.ceil(
-          totalTasks / 2.5
-        )
+    new Set(
+      scheduleBlocks.map(
+        (block) => block.blockId
       )
-    );
+    ).size;
 
   const blockUtilization =
-    Math.round(
-      (utilizedBlocks /
-        availableBlocks) *
-        100
-    );
+    availableBlocks > 0
+      ? Math.round(
+          (utilizedBlocks /
+            availableBlocks) *
+            100
+        )
+      : 0;
 
-  const conflictScore =
-    (conflictsAvoided /
-      potentialConflicts) *
-    60;
+  /*
+   * Current schedule contains
+   * sequential, non-overlapping blocks.
+   */
 
-  const blockScore =
-    blockUtilization *
-    0.4;
-
-  const scheduleEfficiency =
-    Math.min(
-      99,
-      Math.round(
-        conflictScore +
-        blockScore
-      )
-    );
+  const conflictsAvoided = 0;
 
   /*
    * ============================
-   * DYNAMIC AI RECOMMENDATIONS
+   * SCHEDULE EFFICIENCY
+   * ============================
+   *
+   * Current prototype does not have
+   * an actual OR-Tools efficiency score.
+   *
+   * Therefore we use current block
+   * utilization as the measurable
+   * prototype scheduling metric.
+   */
+
+  const scheduleEfficiency =
+    blockUtilization;
+
+  /*
+   * ============================
+   * AI RECOMMENDATIONS
    * ============================
    */
 
@@ -413,8 +363,7 @@ function Analytics() {
       maintenanceData
         .filter(
           (task) =>
-            task.risk ===
-            "Critical"
+            task.risk === "Critical"
         )
         .forEach((task) => {
           criticalDepartmentCounts[
@@ -438,7 +387,7 @@ function Analytics() {
           title:
             "Critical Workload",
           text:
-            `${criticalDepartment[0]} contains ${criticalDepartment[1]} critical tasks. Allocate suitable protected maintenance windows to reduce operational risk.`
+            `${criticalDepartment[0]} contains ${criticalDepartment[1]} critical task. Allocate a suitable protected maintenance window to reduce operational risk.`
         });
       }
 
@@ -462,11 +411,13 @@ function Analytics() {
         criticalTasks;
 
       const highRiskPercent =
-        Math.round(
-          (highAndCritical /
-            totalTasks) *
-            100
-        );
+        totalTasks > 0
+          ? Math.round(
+              (highAndCritical /
+                totalTasks) *
+                100
+            )
+          : 0;
 
       if (
         highAndCritical >
@@ -488,14 +439,14 @@ function Analytics() {
       }
 
       /*
-       * Optimization
+       * Optimization opportunity
        */
 
       recommendations.push({
         title:
           "Optimization Opportunity",
         text:
-          `The current plan avoids approximately ${conflictsAvoided} of ${potentialConflicts} potential conflicts with ${blockUtilization}% block utilization. Re-optimize when train timings or corridor availability change.`
+          `The current plan uses ${utilizedBlocks} of ${availableBlocks} available blocks (${blockUtilization}% utilization) and saves approximately ${hoursSaved} hours based on the current optimized task durations.`
       });
 
       return recommendations;
@@ -540,6 +491,10 @@ function Analytics() {
       [
         "Hours Saved",
         hoursSaved
+      ],
+      [
+        "Total Minutes Saved",
+        totalMinutesSaved
       ],
       [
         "Conflicts Avoided",
@@ -672,7 +627,7 @@ function Analytics() {
             </h3>
 
             <small>
-              ↑ 12% this month
+              Current maintenance tasks
             </small>
 
           </div>
@@ -698,11 +653,13 @@ function Analytics() {
             </h3>
 
             <small>
-              {Math.round(
-                (criticalTasks /
-                  totalTasks) *
-                  100
-              )}
+              {totalTasks > 0
+                ? Math.round(
+                    (criticalTasks /
+                      totalTasks) *
+                      100
+                  )
+                : 0}
               % of total tasks
             </small>
 
@@ -869,31 +826,45 @@ function Analytics() {
             {/* OUTER DONUT */}
 
             <div
-  className="risk-circle"
-  style={{
-    background: "transparent",
-    border: "none",
-    boxShadow: "none"
-  }}
->
-  <div
-    className="risk-donut"
-    style={{
-      background: riskChartStyle.background,
-      width: "100%",
-      height: "100%",
-      borderRadius: "50%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }}
-  >
-    <div className="risk-circle-inner">
-      <strong>{totalTasks}</strong>
-      <span>Tasks</span>
-    </div>
-  </div>
-</div>
+              className="risk-circle"
+              style={{
+                background:
+                  "transparent",
+                border: "none",
+                boxShadow: "none"
+              }}
+            >
+
+              <div
+                className="risk-donut"
+                style={{
+                  background:
+                    riskChartStyle.background,
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent:
+                    "center"
+                }}
+              >
+
+                <div className="risk-circle-inner">
+
+                  <strong>
+                    {totalTasks}
+                  </strong>
+
+                  <span>
+                    Tasks
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
 
             {/* LEGEND */}
 
@@ -986,7 +957,7 @@ function Analytics() {
               </strong>
 
               <small>
-                Dynamic calculation
+                Current plan has no conflicts
               </small>
 
             </div>
@@ -1062,7 +1033,7 @@ function Analytics() {
               {" "}
 
               {criticalTasks > 0
-                ? `${criticalTasks} critical tasks require priority scheduling.`
+                ? `${criticalTasks} critical task requires priority scheduling.`
                 : "No critical tasks currently require immediate prioritization."}
 
             </p>
