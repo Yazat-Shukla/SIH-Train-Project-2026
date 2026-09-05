@@ -1,62 +1,46 @@
 import pandas as pd
 
-from ml.baseline import calculate_priority_with_level
+from aiml.ml.baseline import calculate_priority_with_level
 
 
 def predict_priorities(tasks):
-    """
-    Calculate priority scores for a list of maintenance tasks.
-    """
-
-    results = []
+    prioritized_tasks = []
 
     for task in tasks:
         task_copy = task.copy()
 
         result = calculate_priority_with_level(task_copy)
 
-        task_copy["priority_score"] = result["priority_score"]
-        task_copy["priority_level"] = result["priority_level"]
+        if isinstance(result, tuple):
+            score, level = result
+        elif isinstance(result, dict):
+            score = result["priority_score"]
+            level = result["priority_level"]
+        else:
+            score = float(result)
 
-        results.append(task_copy)
+            if score >= 80:
+                level = "CRITICAL"
+            elif score >= 60:
+                level = "HIGH"
+            elif score >= 40:
+                level = "MEDIUM"
+            else:
+                level = "LOW"
 
-    # Highest priority first
-    results.sort(
+        task_copy["priority_score"] = float(score)
+        task_copy["priority_level"] = level
+
+        prioritized_tasks.append(task_copy)
+
+    prioritized_tasks.sort(
         key=lambda task: task["priority_score"],
-        reverse=True
+        reverse=True,
     )
 
-    return results
+    return prioritized_tasks
 
 
-def load_tasks_from_csv(file_path):
-    """
-    Load maintenance tasks from a CSV file.
-    """
-
-    df = pd.read_csv(file_path)
-
-    # Convert dataframe rows into dictionaries
-    tasks = df.to_dict(orient="records")
-
-    return tasks
-
-
-if __name__ == "__main__":
-
-    csv_path = "ml/data/sample_tasks.csv"
-
-    tasks = load_tasks_from_csv(csv_path)
-
-    prioritized = predict_priorities(tasks)
-
-    print("\nAI Priority Results")
-    print("-" * 60)
-
-    for task in prioritized:
-        print(
-            f"{task['task_id']} | "
-            f"{task['department']} | "
-            f"{task['priority_score']} | "
-            f"{task['priority_level']}"
-        )
+def load_tasks_from_csv(csv_path):
+    df = pd.read_csv(csv_path)
+    return df.to_dict(orient="records")

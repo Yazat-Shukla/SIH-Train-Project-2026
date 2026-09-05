@@ -1,8 +1,8 @@
 import json
 
-from ml.predict import predict_priorities
-from optimizer.scheduler import generate_schedule, format_schedule
-from optimizer.constraints import (
+from aiml.ml.predict import predict_priorities
+from aiml.optimizer.scheduler import generate_schedule, format_schedule
+from aiml.optimizer.constraints import (
     interval_to_minutes,
     find_block_gaps,
 )
@@ -135,7 +135,7 @@ def run_pipeline(data):
 
 if __name__ == "__main__":
     with open(
-        "optimizer/sample_input.json",
+        "aiml/optimizer/sample_input.json",
         "r",
         encoding="utf-8"
     ) as file:

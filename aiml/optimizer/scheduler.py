@@ -1,25 +1,33 @@
-import json
-
 from ortools.sat.python import cp_model
 
-from optimizer.constraints import interval_to_minutes
-from optimizer.objective import build_priority_objective
+from aiml.optimizer.constraints import (
+    interval_to_minutes,
+    task_fits_block,
+)
+
+
+def minutes_to_time(minutes):
+    minutes = minutes % (24 * 60)
+    hours = minutes // 60
+    mins = minutes % 60
+    return f"{hours:02d}:{mins:02d}"
 
 
 def generate_schedule(
     tasks,
     blocks,
     trains,
-    planning_start="22:00"
+    planning_start="22:00",
 ):
     """
     Generate an optimized maintenance schedule.
 
     Constraints:
     1. Task must fit inside its maintenance block.
-    2. Task corridor must match block corridor.
-    3. Task must not overlap with trains on the same corridor.
-    4. Tasks assigned to the same block must not overlap.
+    2. Task and block must belong to the same corridor.
+    3. Task must not overlap a train.
+    4. Tasks in the same block must not overlap.
+    5. Each task can be scheduled at most once.
 
     Objective:
     Maximize total priority score of scheduled tasks.
@@ -30,237 +38,183 @@ def generate_schedule(
     task_variables = []
 
     # ---------------------------------------------------------
-    # CREATE VARIABLES FOR EACH TASK
+    # Create optional task intervals
     # ---------------------------------------------------------
 
     for task in tasks:
 
         task_id = task["task_id"]
         duration = int(task["duration_minutes"])
-        corridor = task["corridor_id"]
-        priority = float(task["priority_score"])
-
-        compatible_blocks = []
 
         for block in blocks:
 
-            if block["corridor_id"] != corridor:
+            if task["corridor_id"] != block["corridor_id"]:
                 continue
 
             block_start, block_end = interval_to_minutes(
                 block["start_time"],
                 block["end_time"],
-                planning_start
+                planning_start,
             )
 
-            if duration > (block_end - block_start):
+            if not task_fits_block(
+                duration,
+                block_start,
+                block_end,
+            ):
                 continue
 
-            compatible_blocks.append(
-                (
-                    block,
-                    block_start,
-                    block_end
-                )
-            )
-
-        if not compatible_blocks:
-            continue
-
-        block_choices = []
-
-        for (
-            block,
-            block_start,
-            block_end
-        ) in compatible_blocks:
-
-            block_id = block["block_id"]
+            latest_start = block_end - duration
 
             start_var = model.NewIntVar(
                 block_start,
-                block_end - duration,
-                f"start_{task_id}_{block_id}"
+                latest_start,
+                f"start_{task_id}_{block['block_id']}",
             )
 
             end_var = model.NewIntVar(
                 block_start + duration,
                 block_end,
-                f"end_{task_id}_{block_id}"
+                f"end_{task_id}_{block['block_id']}",
             )
 
-            selected_var = model.NewBoolVar(
-                f"selected_{task_id}_{block_id}"
+            scheduled_var = model.NewBoolVar(
+                f"scheduled_{task_id}_{block['block_id']}"
             )
 
             model.Add(
                 end_var == start_var + duration
-            ).OnlyEnforceIf(selected_var)
-
-            # -------------------------------------------------
-            # TRAIN CONFLICT CONSTRAINT
-            # -------------------------------------------------
-
-            for train in trains:
-
-                if train["corridor_id"] != corridor:
-                    continue
-
-                train_start, train_end = interval_to_minutes(
-                    train["start_time"],
-                    train["end_time"],
-                    planning_start
-                )
-
-                before_train = model.NewBoolVar(
-                    f"before_{task_id}_{block_id}_{train['train_id']}"
-                )
-
-                after_train = model.NewBoolVar(
-                    f"after_{task_id}_{block_id}_{train['train_id']}"
-                )
-
-                # Task finishes before train
-                model.Add(
-                    end_var <= train_start
-                ).OnlyEnforceIf(before_train)
-
-                # Task starts after train
-                model.Add(
-                    start_var >= train_end
-                ).OnlyEnforceIf(after_train)
-
-                # If task is selected, it must be either
-                # before OR after the train.
-                model.AddBoolOr(
-                    [
-                        before_train,
-                        after_train,
-                        selected_var.Not()
-                    ]
-                )
-
-            block_choices.append(
-                (
-                    selected_var,
-                    start_var,
-                    end_var,
-                    block,
-                    block_start,
-                    block_end
-                )
             )
 
-        # A task can be assigned to at most one block
-        model.Add(
-            sum(
-                choice[0]
-                for choice in block_choices
-            ) <= 1
+            interval_var = model.NewOptionalIntervalVar(
+                start_var,
+                duration,
+                end_var,
+                scheduled_var,
+                f"interval_{task_id}_{block['block_id']}",
+            )
+
+            task_variables.append(
+                {
+                    "task": task,
+                    "block": block,
+                    "start": start_var,
+                    "end": end_var,
+                    "scheduled": scheduled_var,
+                    "interval": interval_var,
+                }
+            )
+
+    # ---------------------------------------------------------
+    # Each task can be scheduled at most once
+    # ---------------------------------------------------------
+
+    for task in tasks:
+
+        task_vars = [
+            item["scheduled"]
+            for item in task_variables
+            if item["task"]["task_id"] == task["task_id"]
+        ]
+
+        if task_vars:
+            model.AddAtMostOne(task_vars)
+
+    # ---------------------------------------------------------
+    # Block-level constraints
+    #
+    # AddNoOverlap guarantees:
+    # - maintenance tasks don't overlap each other
+    # - maintenance tasks don't overlap trains
+    # ---------------------------------------------------------
+
+    for block in blocks:
+
+        block_items = [
+            item
+            for item in task_variables
+            if item["block"]["block_id"] == block["block_id"]
+        ]
+
+        block_intervals = [
+            item["interval"]
+            for item in block_items
+        ]
+
+        # Add fixed train intervals for this corridor
+        for train in trains:
+
+            if train["corridor_id"] != block["corridor_id"]:
+                continue
+
+            train_start, train_end = interval_to_minutes(
+                train["start_time"],
+                train["end_time"],
+                planning_start,
+            )
+
+            # Only add trains that can affect this block
+            if train_end <= block_intervals_start(block):
+                continue
+
+            if train_start >= block_intervals_end(block):
+                continue
+
+            clipped_start = max(
+                train_start,
+                block_intervals_start(block),
+            )
+
+            clipped_end = min(
+                train_end,
+                block_intervals_end(block),
+            )
+
+            if clipped_start >= clipped_end:
+                continue
+
+            train_interval = model.NewIntervalVar(
+                clipped_start,
+                clipped_end - clipped_start,
+                clipped_end,
+                f"train_{block['block_id']}_{train['train_id']}",
+            )
+
+            block_intervals.append(train_interval)
+
+        if block_intervals:
+            model.AddNoOverlap(block_intervals)
+
+    # ---------------------------------------------------------
+    # Objective: maximize priority
+    # ---------------------------------------------------------
+
+    objective_terms = []
+
+    for item in task_variables:
+
+        priority = float(
+            item["task"].get(
+                "priority_score",
+                0,
+            )
         )
 
-        task_variables.append(
-            {
-                "task": task,
-                "choices": block_choices,
-                "priority": priority
-            }
+        priority_integer = int(
+            round(priority * 100)
+        )
+
+        objective_terms.append(
+            priority_integer * item["scheduled"]
+        )
+
+    if objective_terms:
+        model.Maximize(
+            sum(objective_terms)
         )
 
     # ---------------------------------------------------------
-    # SAME-BLOCK TASK OVERLAP CONSTRAINT
-    # ---------------------------------------------------------
-
-    for i in range(len(task_variables)):
-
-        for j in range(i + 1, len(task_variables)):
-
-            task_a = task_variables[i]
-            task_b = task_variables[j]
-
-            for (
-                selected_a,
-                start_a,
-                end_a,
-                block_a,
-                _,
-                _
-            ) in task_a["choices"]:
-
-                for (
-                    selected_b,
-                    start_b,
-                    end_b,
-                    block_b,
-                    _,
-                    _
-                ) in task_b["choices"]:
-
-                    if (
-                        block_a["block_id"]
-                        != block_b["block_id"]
-                    ):
-                        continue
-
-                    a_before_b = model.NewBoolVar(
-                        f"a_before_b_{i}_{j}_{block_a['block_id']}"
-                    )
-
-                    b_before_a = model.NewBoolVar(
-                        f"b_before_a_{i}_{j}_{block_a['block_id']}"
-                    )
-
-                    model.Add(
-                        end_a <= start_b
-                    ).OnlyEnforceIf(a_before_b)
-
-                    model.Add(
-                        end_b <= start_a
-                    ).OnlyEnforceIf(b_before_a)
-
-                    model.AddBoolOr(
-                        [
-                            a_before_b,
-                            b_before_a,
-                            selected_a.Not(),
-                            selected_b.Not()
-                        ]
-                    )
-
-    # ---------------------------------------------------------
-    # OPTIMIZATION OBJECTIVE
-    # ---------------------------------------------------------
-
-    selected_variables = []
-    priority_scores = []
-
-    for task_data in task_variables:
-
-        for (
-            selected_var,
-            _,
-            _,
-            _,
-            _,
-            _
-        ) in task_data["choices"]:
-
-            selected_variables.append(
-                selected_var
-            )
-
-            priority_scores.append(
-                task_data["priority"]
-            )
-
-    build_priority_objective(
-        model,
-        selected_variables,
-        priority_scores
-    )
-
-    # ---------------------------------------------------------
-    # SOLVE
+    # Solve
     # ---------------------------------------------------------
 
     solver = cp_model.CpSolver()
@@ -269,104 +223,88 @@ def generate_schedule(
 
     status = solver.Solve(model)
 
-    if status not in (
-        cp_model.OPTIMAL,
-        cp_model.FEASIBLE
-    ):
-        return {
-            "status": "INFEASIBLE",
-            "schedule": []
-        }
-
-    # ---------------------------------------------------------
-    # BUILD RESULT
-    # ---------------------------------------------------------
-
     schedule = []
 
-    for task_data in task_variables:
+    if status in (
+        cp_model.OPTIMAL,
+        cp_model.FEASIBLE,
+    ):
 
-        task = task_data["task"]
+        for item in task_variables:
 
-        for (
-            selected_var,
-            start_var,
-            end_var,
-            block,
-            block_start,
-            block_end
-        ) in task_data["choices"]:
+            if solver.Value(item["scheduled"]) == 1:
 
-            if solver.Value(selected_var) == 1:
-
-                start_minutes = solver.Value(
-                    start_var
+                start = solver.Value(
+                    item["start"]
                 )
 
-                end_minutes = solver.Value(
-                    end_var
+                end = solver.Value(
+                    item["end"]
                 )
 
                 schedule.append(
                     {
-                        "task_id": task["task_id"],
-                        "department": task["department"],
-                        "corridor_id": task["corridor_id"],
-                        "block_id": block["block_id"],
-
-                        # Task timing
-                        "start_minutes": start_minutes,
-                        "end_minutes": end_minutes,
-
-                        # Actual block timing
-                        "block_start_minutes": block_start,
-                        "block_end_minutes": block_end,
-
-                        "priority_score": task["priority_score"]
+                        "task_id": item["task"]["task_id"],
+                        "block_id": item["block"]["block_id"],
+                        "corridor_id": item["task"]["corridor_id"],
+                        "start_time": minutes_to_time(start),
+                        "end_time": minutes_to_time(end),
+                        "duration_minutes": int(
+                            item["task"]["duration_minutes"]
+                        ),
+                        "priority_score": item["task"].get(
+                            "priority_score",
+                            0,
+                        ),
+                        "priority_level": item["task"].get(
+                            "priority_level",
+                            "",
+                        ),
                     }
                 )
 
     schedule.sort(
-        key=lambda item: item["start_minutes"]
+        key=lambda item: (
+            item["block_id"],
+            item["start_time"],
+        )
     )
 
+    if status == cp_model.OPTIMAL:
+        status_text = "OPTIMAL"
+    elif status == cp_model.FEASIBLE:
+        status_text = "FEASIBLE"
+    else:
+        status_text = "INFEASIBLE"
+
     return {
-        "status": (
-            "OPTIMAL"
-            if status == cp_model.OPTIMAL
-            else "FEASIBLE"
-        ),
-        "schedule": schedule
+        "status": status_text,
+        "schedule": schedule,
     }
 
 
-def minutes_to_time(minutes):
-    """
-    Convert minutes into HH:MM format.
+def block_intervals_start(block, planning_start="22:00"):
+    start, _ = interval_to_minutes(
+        block["start_time"],
+        block["end_time"],
+        planning_start,
+    )
+    return start
 
-    Supports times beyond midnight.
-    """
 
-    minutes = minutes % (24 * 60)
-
-    hours = minutes // 60
-    mins = minutes % 60
-
-    return f"{hours:02d}:{mins:02d}"
+def block_intervals_end(block, planning_start="22:00"):
+    _, end = interval_to_minutes(
+        block["start_time"],
+        block["end_time"],
+        planning_start,
+    )
+    return end
 
 
 def format_schedule(result):
     """
-    Convert internal task-based schedule into
-    frontend/API-friendly block-based structure.
+    Convert optimizer output into frontend-friendly format.
     """
-
-    if result["status"] == "INFEASIBLE":
-
-        return {
-            "status": "INFEASIBLE",
-            "blocks": []
-        }
 
     blocks = {}
 
@@ -375,100 +313,24 @@ def format_schedule(result):
         block_id = item["block_id"]
 
         if block_id not in blocks:
-
             blocks[block_id] = {
                 "block_id": block_id,
                 "corridor_id": item["corridor_id"],
-
-                # IMPORTANT:
-                # Use actual block timing,
-                # NOT first task timing.
-                "start_time": minutes_to_time(
-                    item["block_start_minutes"]
-                ),
-
-                "end_time": minutes_to_time(
-                    item["block_end_minutes"]
-                ),
-
-                "tasks": []
+                "tasks": [],
             }
 
         blocks[block_id]["tasks"].append(
             {
                 "task_id": item["task_id"],
-                "department": item["department"],
-                "priority": item["priority_score"],
-                "start_time": minutes_to_time(
-                    item["start_minutes"]
-                ),
-                "end_time": minutes_to_time(
-                    item["end_minutes"]
-                )
+                "start_time": item["start_time"],
+                "end_time": item["end_time"],
+                "duration_minutes": item["duration_minutes"],
+                "priority_score": item["priority_score"],
+                "priority_level": item["priority_level"],
             }
         )
 
     return {
         "status": result["status"],
-        "blocks": list(blocks.values())
+        "blocks": list(blocks.values()),
     }
-
-
-if __name__ == "__main__":
-
-    with open(
-        "optimizer/sample_input.json",
-        "r",
-        encoding="utf-8"
-    ) as file:
-
-        data = json.load(file)
-
-    planning_start = data.get(
-        "planning_start_time",
-        "22:00"
-    )
-
-    result = generate_schedule(
-        data["tasks"],
-        data["blocks"],
-        data["trains"],
-        planning_start
-    )
-
-    print("\nOptimization Result")
-    print("=" * 60)
-
-    print(
-        "Planning Start:",
-        planning_start
-    )
-
-    print(
-        "Status:",
-        result["status"]
-    )
-
-    for item in result["schedule"]:
-
-        print(
-            f"{item['task_id']} | "
-            f"Block {item['block_id']} | "
-            f"{minutes_to_time(item['start_minutes'])} - "
-            f"{minutes_to_time(item['end_minutes'])} | "
-            f"Priority {item['priority_score']}"
-        )
-
-    formatted = format_schedule(
-        result
-    )
-
-    print("\nFrontend/API Schedule")
-    print("=" * 60)
-
-    print(
-        json.dumps(
-            formatted,
-            indent=2
-        )
-    )

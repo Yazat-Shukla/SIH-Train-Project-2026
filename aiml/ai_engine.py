@@ -1,5 +1,4 @@
-from pipeline import run_pipeline
-
+from aiml.pipeline import run_pipeline
 
 def run_ai_engine(data):
     """
