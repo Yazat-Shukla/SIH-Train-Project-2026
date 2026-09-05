@@ -17,17 +17,22 @@ def get_tasks_for_priority(db: Session) -> list[MaintenanceTask]:
 def prepare_priority_features(
     tasks: list[MaintenanceTask],
 ) -> list[dict]:
-    """Prepare maintenance task data for the ML model."""
+    """Prepare the six priority factors required by the ML model."""
 
     features = []
 
     for task in tasks:
-        features.append({
-            "task_id": task.task_id,
-            "description": getattr(task, "description", ""),
-            "priority": getattr(task, "priority", None),
-            "status": getattr(task, "status", None),
-        })
+        features.append(
+            {
+                "task_id": task.task_id,
+                "criticality": float(task.criticality),
+                "severity": float(task.severity),
+                "asset_importance": float(task.asset_importance),
+                "train_impact": float(task.train_impact),
+                "overdue_days": int(task.overdue_days),
+                "historical_failures": int(task.historical_failures),
+            }
+        )
 
     return features
 
@@ -47,12 +52,14 @@ def calculate_priorities(db: Session) -> list[dict]:
     results = []
 
     for task, prediction in zip(tasks, predictions, strict=True):
-        results.append({
-            "task_id": task.task_id,
-            "priority_score": prediction["priority_score"],
-            "priority_level": prediction["priority_level"],
-            "model_version": prediction["model_version"],
-        })
+        results.append(
+            {
+                "task_id": task.task_id,
+                "priority_score": prediction["priority_score"],
+                "priority_level": prediction["priority_level"],
+                "model_version": prediction["model_version"],
+            }
+        )
 
     return results
 

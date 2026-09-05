@@ -2,10 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.services.priority_service import (
-    get_tasks_for_priority,
-    prepare_priority_features,
-)
+from app.services.priority_service import calculate_priorities
 
 router = APIRouter(
     prefix="/priorities",
@@ -15,16 +12,5 @@ router = APIRouter(
 
 @router.get("")
 def get_priorities(db: Session = Depends(get_db)):
-    tasks = get_tasks_for_priority(db)
-
-    result = []
-
-    for task in tasks:
-        result.append(
-            {
-                "task_id": task.task_id,
-                "features": prepare_priority_features(task),
-            }
-        )
-
-    return result
+    """Calculate and return priority predictions for all maintenance tasks."""
+    return calculate_priorities(db)
