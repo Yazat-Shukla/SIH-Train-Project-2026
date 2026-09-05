@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.db.models.schedule import ScheduleAssignment
+from app.schemas.planning import GeneratePlanningRequest
 from app.schemas.schedule import ScheduleResponse
 from app.services.optimization_service import generate_plan
 
@@ -29,5 +30,12 @@ def get_schedule(
 
 
 @router.post("/planning/generate")
-def generate_schedule(db: Session = Depends(get_db)):
-    return generate_plan(db)
+def generate_schedule(
+    request: GeneratePlanningRequest,
+    db: Session = Depends(get_db),
+):
+    return generate_plan(
+        db=db,
+        planning_date=request.planning_date,
+        created_by=request.created_by,
+    )
